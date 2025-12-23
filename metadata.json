@@ -1,0 +1,7 @@
+{
+  "name": "AetherHealth FHIR Portal",
+  "description": "A modern, interoperable healthcare dashboard utilizing FHIR standards for patient management, triage (P1-P4), and AI-driven clinical insights.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
