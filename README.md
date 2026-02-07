@@ -1,46 +1,72 @@
-# <img src="./assets/logo.svg" width="32" height="32" style="vertical-align: middle; margin-right: 8px;" /> AetherHealth FHIR Portal
+# <img src="./assets/logo-enterprise.svg" width="42" height="42" style="vertical-align: middle; margin-right: 12px;" /> AetherHealth Enterprise Interoperability Layer
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![FHIR R4](https://img.shields.io/badge/Standard-FHIR%20R4-firebrick)](http://hl7.org/fhir/)
 [![Powered by Gemini](https://img.shields.io/badge/AI-Google%20Gemini-blue)](https://deepmind.google/technologies/gemini/)
 
-> **A bridge between legacy healthcare data and modern AI-driven clinical insights.**
+> **A robust bridge transforming unstructured field data into standardized AI-ready clinical intelligence.**
 
-### [🚀 LAUNCH LIVE APP](https://ai.studio/apps/drive/1KdM4XZO5ESKjnUoZHihNy-Ev0DpooiRU?fullscreenApplet=true)
-
----
-
-## 📖 The Story: Connecting the Dots in Healthcare
-
-### The Challenge: A Disconnected Reality
-Imagine a rural field clinic or a busy triage center. Data comes in fast—often on paper, simplified Google Forms, or legacy spreadsheets. 
-Meanwhile, advanced AI tools exist that could predict patient deterioration, but they only speak the complex language of modern standards like **HL7 FHIR**.
-
-There is a massive chasm between **"The data we have"** (CSVs, forms) and **"The data AI needs"** (Structured FHIR JSON).
-
-### The Solution: AetherHealth
-AetherHealth was built to bridge this gap. It acts as an intelligent interoperability layer that:
-1.  **Listens** to simple data streams (like the Google Sheets linked to Triage Forms).
-2.  **Translates** messy inputs into strict, international healthcare standards (HL7 v2 & FHIR R4).
-3.  **Augments** the structured data with Google's Gemini AI to provide instant "Second Opinion" clinical summaries.
-
-We didn't just build a dashboard; we built a translation engine that turns raw rows of spreadsheet data into lifesaving clinical context.
+### [🚀 LAUNCH ENTERPRISE DASHBOARD](https://ai.studio/apps/drive/1KdM4XZO5ESKjnUoZHihNy-Ev0DpooiRU?fullscreenApplet=true)
 
 ---
 
-## 📸 System Overview
+## 🔗 Live Data Ingestion Channels
+The application listens to the following active data streams. Submitting data via these Google Forms will automatically be ingested, converted to HL7/FHIR, and displayed in the app dashboard.
 
-### The Operations Dashboard
-*A real-time command center showing patient status, triage priority, and facility load.*
+| Input Channel | Purpose | Google Form Link | Raw Data Lake (CSV) |
+|:--- |:--- |:--- |:--- |
+| **Channel A** | **Patient SOAP Notes & Triage** <br> *Primary intake form for new patients.* | [**👉 Open SOAP Form**](https://docs.google.com/forms/d/e/1FAIpQLSdST7Gm8bSD8rCs89AMzKrXhiww0SfTGZcXMgNpZyyue2cbQw/viewform) | [Download/View CSV](https://docs.google.com/spreadsheets/d/e/2PACX-1vRh7DqUADDoL6_ACzJLgA3z3UnV3IRDFrKJtHXUIQauVok2X1Gx_tInzsyOKdnvmdVgbiZGdtY-wvFX/pub?output=csv) |
+| **Channel B** | **Vitals & Monitoring** <br> *Recurring updates for existing patients.* | [**👉 Open Vitals Form**](https://docs.google.com/forms/d/e/1FAIpQLSeTcuHPtPYJA1d4wfR8VINS_a2VThH7x1v3vh6dUj-yrY_P5A/viewform) | [Download/View CSV](https://docs.google.com/spreadsheets/d/e/2PACX-1vQW0aRj-dJIS_sqFGXvoLxiSLQw5PwpaQyUpvDyAFs2_g010u8ru8g39TM2irtecgR2pX_8yqPbmwkw/pub?output=csv) |
 
-![Dashboard Architecture](./assets/dashboard-wireframe.svg)
+---
+
+## 🏗️ System Architecture & Process Flow
+
+### 1. The Interoperability Pipeline
+The system uses a "Store & Forward" architecture to ingest messy field data and normalize it into FHIR.
+
+```mermaid
+graph LR
+    A[Google Form Entry] -->|Submit| B(Google Sheets / Data Lake);
+    B -->|Sync CSV| C[AetherHealth Ingestion Engine];
+    C -->|Map & Normalize| D{Translation Layer};
+    D -->|Convert| E[HL7 v2.5 Message];
+    E -->|Parse| F[FHIR R4 Bundle];
+    F -->|Persist| G[(Local FHIR Store)];
+    G -->|Analyze| H[Gemini AI Agent];
+    H -->|Insight| I[Clinical Dashboard];
+```
+
+### 2. Data Transformation Logic
+AetherHealth translates "Human" questions into "Machine" codes.
+
+```mermaid
+classDiagram
+    class GoogleSheetRow {
+        +String "What is your fever?"
+        +String "Heart Rate?"
+        +String "Patient Name"
+    }
+    class FHIR_Observation {
+        +CodeableConcept code (8310-5)
+        +Quantity value
+        +Reference subject
+    }
+    class Gemini_AI {
+        +analyze(Bundle)
+        +generateRiskScore()
+    }
+    
+    GoogleSheetRow -->|Fuzzy Matching| FHIR_Observation
+    FHIR_Observation -->|Context| Gemini_AI
+```
 
 ---
 
 ## ⚡ Key Capabilities
 
-### 1. Smart Ingestion Engine
-Real-world data is never perfect. Our "Universal Form Adapter":
+### 1. Smart Ingestion Engine (Universal Adapter)
+Real-world data is never perfect. Our engine:
 - **Fuzzy Matches Headers:** It understands that "What is the patient's temp?" means `Body Temperature`.
 - **Prevents Duplicates:** It intelligently merges new form responses into existing patient records using ID matching logic.
 - **Simulates Legacy Tech:** It generates raw **HL7 v2.5 ADT messages** internally to demonstrate how legacy hospital systems communicate.
@@ -56,15 +82,12 @@ We leverage **Google Gemini 2.5 Flash** to act as an always-on clinical assistan
 
 ---
 
-## 🛠️ How It Works (The Pipeline)
+## 🛠️ Technical Stack
 
-1.  **Data Entry:** A nurse submits a Google Form.
-2.  **Sync:** The AetherHealth portal pulls the published CSV.
-3.  **Normalization:** 
-    *   Row ➜ HL7 Message (ADT^A01)
-    *   HL7 ➜ FHIR Resources (Patient, Encounter, Observation)
-4.  **AI Analysis:** The FHIR Bundle is sent to Gemini to generate the "Clinical Summary" and "Triage Tag".
-5.  **Visualization:** The dashboard updates in real-time.
+*   **Frontend:** React 19, TailwindCSS
+*   **Standards:** HL7 v2, FHIR R4
+*   **AI:** Google Gemini 1.5 Pro via `@google/genai` SDK
+*   **Charts:** Recharts for Vitals visualization
 
 ---
 
@@ -87,11 +110,4 @@ We leverage **Google Gemini 2.5 Flash** to act as an always-on clinical assistan
 
 ---
 
-## 🔮 Future Roadmap
-- [ ] **Wearable Integration:** Direct API hooks for Apple Watch / Fitbit data.
-- [ ] **Voice-to-FHIR:** Using Gemini Live API to transcribe doctor notes directly into ClinicalImpressions.
-- [ ] **Backend Persistence:** Moving from LocalStorage to a real FHIR Server (Firely or Google Cloud Healthcare API).
-
----
-
-*Built with ❤️ for the future of Digital Health.*
+*AetherHealth: Bridging the gap between data collection and clinical action.*

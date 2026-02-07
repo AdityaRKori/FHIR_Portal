@@ -2,6 +2,11 @@ import { Patient, Encounter, Observation } from '../types';
 
 const PUBLIC_FHIR_ENDPOINT = 'https://hapi.fhir.org/baseR4';
 
+// Headers are critical for some FHIR servers to prevent 406 Not Acceptable errors
+const FHIR_HEADERS = {
+  'Accept': 'application/fhir+json;q=1.0, application/json+fhir;q=0.9, application/json;q=0.8'
+};
+
 // Helper to safely map external FHIR JSON to our simplified Types
 const mapExternalPatient = (resource: any): Patient => ({
   resourceType: 'Patient',
@@ -52,8 +57,13 @@ export const searchPublicPatients = async (nameQuery: string = ''): Promise<Pati
       ? `name=${encodeURIComponent(nameQuery)}` 
       : '_sort=-_lastUpdated&_count=20';
 
-    const response = await fetch(`${PUBLIC_FHIR_ENDPOINT}/Patient?${query}`);
-    if (!response.ok) throw new Error('Failed to fetch from public API');
+    const response = await fetch(`${PUBLIC_FHIR_ENDPOINT}/Patient?${query}`, {
+      headers: FHIR_HEADERS
+    });
+    
+    if (!response.ok) {
+      throw new Error(`FHIR Server Error: ${response.status} ${response.statusText}`);
+    }
     
     const data = await response.json();
     if (!data.entry) return [];
@@ -67,33 +77,42 @@ export const searchPublicPatients = async (nameQuery: string = ''): Promise<Pati
 
 export const getPublicPatientById = async (id: string): Promise<Patient | null> => {
   try {
-    const response = await fetch(`${PUBLIC_FHIR_ENDPOINT}/Patient/${id}`);
+    const response = await fetch(`${PUBLIC_FHIR_ENDPOINT}/Patient/${id}`, {
+      headers: FHIR_HEADERS
+    });
     if (!response.ok) return null;
     const data = await response.json();
     return mapExternalPatient(data);
   } catch (error) {
+    console.error("Fetch Patient Error:", error);
     return null;
   }
 };
 
 export const getPublicEncounters = async (patientId: string): Promise<Encounter[]> => {
   try {
-    const response = await fetch(`${PUBLIC_FHIR_ENDPOINT}/Encounter?subject=Patient/${patientId}&_sort=-date&_count=10`);
+    const response = await fetch(`${PUBLIC_FHIR_ENDPOINT}/Encounter?subject=Patient/${patientId}&_sort=-date&_count=10`, {
+      headers: FHIR_HEADERS
+    });
     if (!response.ok) return [];
     const data = await response.json();
     return (data.entry || []).map((e: any) => mapExternalEncounter(e.resource));
   } catch (error) {
+    console.error("Fetch Encounter Error:", error);
     return [];
   }
 };
 
 export const getPublicObservations = async (patientId: string): Promise<Observation[]> => {
   try {
-    const response = await fetch(`${PUBLIC_FHIR_ENDPOINT}/Observation?subject=Patient/${patientId}&_sort=-date&_count=20`);
+    const response = await fetch(`${PUBLIC_FHIR_ENDPOINT}/Observation?subject=Patient/${patientId}&_sort=-date&_count=20`, {
+      headers: FHIR_HEADERS
+    });
     if (!response.ok) return [];
     const data = await response.json();
     return (data.entry || []).map((e: any) => mapExternalObservation(e.resource));
   } catch (error) {
+    console.error("Fetch Observation Error:", error);
     return [];
   }
 };

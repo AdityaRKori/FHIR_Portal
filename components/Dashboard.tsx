@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getPatients, getTriageColor } from '../services/store';
 import { searchPublicPatients } from '../services/externalFhirService';
 import { Patient } from '../types';
-import { Search, RefreshCw, ChevronRight, Globe, Database, Server } from 'lucide-react';
+import { Search, RefreshCw, ChevronRight, Globe, Database, Server, AlertTriangle } from 'lucide-react';
 
 interface DashboardProps {
   onSelectPatient: (id: string, source: 'local' | 'public') => void;
@@ -14,9 +14,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectPatient }) => {
   const [source, setSource] = useState<'local' | 'public'>('local');
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({ active: 0, critical: 0, waitTime: 14 });
+  const [errorMsg, setErrorMsg] = useState('');
 
   const refreshData = async () => {
     setLoading(true);
+    setErrorMsg('');
+    
     if (source === 'local') {
       const data = await getPatients();
       setPatients(data);
@@ -28,14 +31,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectPatient }) => {
       setLoading(false);
     } else {
       // Public Source
-      const data = await searchPublicPatients(searchTerm);
-      setPatients(data);
-      // Stats are less relevant for public search results, but we can show count
-      setStats({
-        active: data.length,
-        critical: 0, // Public data usually lacks our specific Triage extension
-        waitTime: 0
-      });
+      try {
+        const data = await searchPublicPatients(searchTerm);
+        setPatients(data);
+        setStats({
+          active: data.length,
+          critical: 0, // Public data usually lacks our specific Triage extension
+          waitTime: 0
+        });
+      } catch (e) {
+        setErrorMsg('Failed to connect to public FHIR server.');
+        setPatients([]);
+      }
       setLoading(false);
     }
   };
@@ -187,9 +194,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectPatient }) => {
         </table>
         {!loading && patients.length === 0 && (
           <div className="p-10 text-center text-gray-400">
-             {source === 'local' 
-               ? "No local patients found. Sync data via Ingestion tab." 
-               : "No patients found on public server matching query."}
+             {errorMsg ? (
+               <div className="flex flex-col items-center gap-2 text-amber-600">
+                 <AlertTriangle className="w-6 h-6" />
+                 <span>{errorMsg}</span>
+                 <span className="text-xs text-gray-400">The public HAPI server may be experiencing downtime or rate-limiting.</span>
+               </div>
+             ) : (
+                source === 'local' 
+                 ? "No local patients found. Sync data via Ingestion tab." 
+                 : "No patients found on public server matching query."
+             )}
           </div>
         )}
       </div>

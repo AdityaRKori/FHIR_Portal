@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getIngestionLogs, addPatient, addEncounter, addObservation, addLog } from '../services/store';
 import { generateHL7v2, parseHL7toFHIR } from '../utils/hl7Generator';
 import { IngestionLog as LogType } from '../types';
-import { CheckCircle, XCircle, RefreshCw, DownloadCloud, FileSpreadsheet, ArrowRight, ShieldCheck, AlertCircle, Link } from 'lucide-react';
+import { CheckCircle, XCircle, RefreshCw, DownloadCloud, FileSpreadsheet, ArrowRight, ShieldCheck, AlertCircle, Link, ExternalLink, FileText } from 'lucide-react';
 
 export const IngestionLogView: React.FC = () => {
   const [logs, setLogs] = useState<LogType[]>([]);
@@ -16,9 +16,18 @@ export const IngestionLogView: React.FC = () => {
     refreshLogs();
   }, []);
 
+  // Updated with the user's specific published sheets.
   const PRESET_SHEETS = [
-    { label: "Form 1 (General)", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQW0aRj-dJIS_sqFGXvoLxiSLQw5PwpaQyUpvDyAFs2_g010u8ru8g39TM2irtecgR2pX_8yqPbmwkw/pub?output=csv" },
-    { label: "Form 2 (Follow-up)", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRh7DqUADDoL6_ACzJLgA3z3UnV3IRDFrKJtHXUIQauVok2X1Gx_tInzsyOKdnvmdVgbiZGdtY-wvFX/pub?output=csv" }
+    { 
+      label: "Form 1: Patient SOAP Notes & Triage", 
+      csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRh7DqUADDoL6_ACzJLgA3z3UnV3IRDFrKJtHXUIQauVok2X1Gx_tInzsyOKdnvmdVgbiZGdtY-wvFX/pub?output=csv",
+      formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSdST7Gm8bSD8rCs89AMzKrXhiww0SfTGZcXMgNpZyyue2cbQw/viewform"
+    },
+    { 
+      label: "Form 2: Vitals & Monitoring", 
+      csvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQW0aRj-dJIS_sqFGXvoLxiSLQw5PwpaQyUpvDyAFs2_g010u8ru8g39TM2irtecgR2pX_8yqPbmwkw/pub?output=csv",
+      formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSeTcuHPtPYJA1d4wfR8VINS_a2VThH7x1v3vh6dUj-yrY_P5A/viewform"
+    }
   ];
 
   // Helper to find column index by lenient keyword matching (handles Google Form questions)
@@ -45,7 +54,8 @@ export const IngestionLogView: React.FC = () => {
       
       // If user accidentally uses an edit link, try to fix it (though presets are now correct)
       if (csvUrl.includes('/edit')) {
-        csvUrl = csvUrl.replace(/\/edit.*$/, '/export?format=csv');
+        // Attempt to convert edit link to pub link, though this often requires manual "Publish" action first
+        csvUrl = csvUrl.replace(/\/edit.*$/, '/pub?output=csv');
       } 
       
       // Cache buster
@@ -77,7 +87,7 @@ export const IngestionLogView: React.FC = () => {
         dob: findCol(headers, ['dob', 'birth', 'born']),
         phone: findCol(headers, ['phone', 'contact', 'mobile', 'cell']),
         // Symptoms might be "Reason", "Complaint", "Symptoms", "Issue"
-        symptoms: findCol(headers, ['symptom', 'reason', 'complaint', 'issue', 'diagnosis', 'problem']),
+        symptoms: findCol(headers, ['symptom', 'reason', 'complaint', 'issue', 'diagnosis', 'problem', 'soap', 'history']),
         triage: findCol(headers, ['triage', 'level', 'priority', 'p1', 'p2', 'status']),
         heartRate: findCol(headers, ['heart', 'rate', 'pulse', 'bpm', 'hr']),
         temp: findCol(headers, ['temp', 'fever', 'celsius', 'fahrenheit']),
@@ -94,7 +104,6 @@ export const IngestionLogView: React.FC = () => {
         if (!row.trim()) continue;
         
         // Simple CSV split (handles basic commas)
-        // In a real prod app, use a library like 'papaparse' for quoted CSVs
         const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, '').trim());
         
         // Extract data using the map
@@ -158,6 +167,31 @@ export const IngestionLogView: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-8">
       
+      {/* Live Form Links */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-indigo-100 rounded-2xl p-6 shadow-sm">
+        <h2 className="text-lg font-bold text-indigo-900 mb-2 flex items-center gap-2">
+          <FileText className="w-5 h-5" />
+          Live Data Collection Forms
+        </h2>
+        <p className="text-sm text-indigo-700 mb-4">
+          Data entry is performed via standard Google Forms. Responses are written to the Sheets below, then ingested by AetherHealth.
+        </p>
+        <div className="flex flex-wrap gap-4">
+          {PRESET_SHEETS.map((preset, idx) => (
+             <a 
+               key={idx} 
+               href={preset.formUrl} 
+               target="_blank" 
+               rel="noreferrer"
+               className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-700 font-medium rounded-lg shadow-sm border border-indigo-100 hover:bg-indigo-600 hover:text-white transition"
+             >
+                <ExternalLink className="w-4 h-4" />
+                Open {preset.label}
+             </a>
+          ))}
+        </div>
+      </div>
+
       {/* Connector Panel */}
       <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-4">
@@ -165,30 +199,33 @@ export const IngestionLogView: React.FC = () => {
             <FileSpreadsheet className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Google Sheets Connector</h2>
-            <p className="text-sm text-gray-500">Sync patient responses. Supports automatic column mapping.</p>
+            <h2 className="text-lg font-bold text-gray-900">Google Sheets Integration</h2>
+            <p className="text-sm text-gray-500">Sync patient responses. Supports automatic HL7 mapping.</p>
           </div>
         </div>
 
         <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-6">
           <h4 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-oil-600" />
-            Smart Mapping Active
+            Active Sheet Connections
           </h4>
           <p className="text-sm text-gray-600 mb-3">
-            The system automatically detects columns like <b>"Patient ID", "Name", "Score", "Triage"</b> in your form responses.
+             Select a source below to pull the latest CSV data from the cloud.
             <br/>
-            <span className="text-xs text-orange-600 font-medium">Note: Updates from Google Forms to the "Published CSV" link can take up to 5 minutes.</span>
+            <span className="text-xs text-orange-600 font-medium">Requirement: Sheets must be "Published to Web" as CSV.</span>
           </p>
           <div className="flex flex-wrap gap-2 text-xs">
             {PRESET_SHEETS.map((preset, idx) => (
               <button 
                 key={idx}
-                onClick={() => setSheetUrl(preset.url)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 hover:border-oil-500 hover:text-oil-600 rounded-lg transition"
+                onClick={() => {
+                   setSheetUrl(preset.csvUrl);
+                   // Optionally auto-trigger
+                }}
+                className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 hover:border-oil-500 hover:text-oil-600 rounded-lg transition font-medium"
               >
                 <Link className="w-3 h-3" />
-                {preset.label}
+                Use {preset.label} Source
               </button>
             ))}
           </div>
@@ -197,22 +234,22 @@ export const IngestionLogView: React.FC = () => {
         <div className="flex gap-3">
           <input 
             type="text" 
-            placeholder="Paste Google Sheet CSV URL here..." 
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-oil-500 focus:outline-none"
+            placeholder="Paste Google Sheet Published CSV URL here..." 
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-oil-500 focus:outline-none font-mono text-sm"
             value={sheetUrl}
             onChange={(e) => setSheetUrl(e.target.value)}
           />
           <button 
             onClick={handleSyncGoogleSheet}
             disabled={isSyncing}
-            className="px-6 py-2 bg-oil-600 text-white font-medium rounded-xl hover:bg-oil-700 disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-2 bg-oil-600 text-white font-medium rounded-xl hover:bg-oil-700 disabled:opacity-50 flex items-center gap-2 whitespace-nowrap"
           >
             {isSyncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <DownloadCloud className="w-4 h-4" />}
-            Sync Sheet
+            Sync Now
           </button>
         </div>
         {statusMsg && (
-          <div className={`mt-3 text-sm font-medium ${statusMsg.includes('Error') || statusMsg.includes('Warning') ? 'text-orange-600' : 'text-green-600'}`}>
+          <div className={`mt-3 text-sm font-medium ${statusMsg.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
             {statusMsg}
           </div>
         )}
