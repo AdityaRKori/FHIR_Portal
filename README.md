@@ -1,4 +1,4 @@
-# 🏥 AetherHealth FHIR Portal
+# <img src="./assets/logo.svg" width="32" height="32" style="vertical-align: middle; margin-right: 8px;" /> AetherHealth FHIR Portal
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![FHIR R4](https://img.shields.io/badge/Standard-FHIR%20R4-firebrick)](http://hl7.org/fhir/)
@@ -6,81 +6,69 @@
 
 > **A bridge between legacy healthcare data and modern AI-driven clinical insights.**
 
-### [🚀 LAUNCH LIVE APP](https://your-app-url-here.com) 
-*(Replace this link with your Vercel/Netlify deployment URL)*
+### [🚀 LAUNCH LIVE APP](https://ai.studio/apps/drive/1KdM4XZO5ESKjnUoZHihNy-Ev0DpooiRU?fullscreenApplet=true)
 
 ---
 
-## 📖 The Story: Why AetherHealth?
+## 📖 The Story: Connecting the Dots in Healthcare
 
-### The Problem: The Data Silo Crisis
-Modern healthcare is drowning in data but starving for wisdom. 
-1. **Fragmentation:** Patient data is scattered across legacy systems (using HL7 v2), Excel sheets from field clinics, and modern EHRs.
-2. **Interoperability Gap:** Converting a paper form or a CSV row into a standardized HL7 FHIR resource is technically complex and error-prone.
-3. **Information Overload:** Clinicians spend more time connecting dots between vital signs and history than actually diagnosing the patient.
+### The Challenge: A Disconnected Reality
+Imagine a rural field clinic or a busy triage center. Data comes in fast—often on paper, simplified Google Forms, or legacy spreadsheets. 
+Meanwhile, advanced AI tools exist that could predict patient deterioration, but they only speak the complex language of modern standards like **HL7 FHIR**.
 
-### The Solution
-AetherHealth is a **Next-Generation Interoperability Portal** designed to ingest data from low-tech sources (like Google Sheets/Forms), convert it into the robust **FHIR R4 standard**, and immediately apply **Generative AI** to produce clinical summaries and triage recommendations.
+There is a massive chasm between **"The data we have"** (CSVs, forms) and **"The data AI needs"** (Structured FHIR JSON).
 
----
+### The Solution: AetherHealth
+AetherHealth was built to bridge this gap. It acts as an intelligent interoperability layer that:
+1.  **Listens** to simple data streams (like the Google Sheets linked to Triage Forms).
+2.  **Translates** messy inputs into strict, international healthcare standards (HL7 v2 & FHIR R4).
+3.  **Augments** the structured data with Google's Gemini AI to provide instant "Second Opinion" clinical summaries.
 
-## ⚡ Key Features
-
-### 1. Smart Data Ingestion (CSV -> HL7 -> FHIR)
-We recognize that real-world data collection is messy. 
-- **Universal Form Adapter:** The system connects directly to Google Sheets (Published CSVs).
-- **Smart Header Detection:** It uses fuzzy matching to understand columns like "What is your MRN?" or "Current Temp" without strict formatting requirements.
-- **ID Matching Logic:** Automatically detects if a patient exists. If the ID matches, it **updates** the record (merging new vitals) rather than creating duplicates.
-
-### 2. Generative AI Clinical Insights
-Powered by **Google Gemini 2.5 Flash**, the application:
-- Reads the complex FHIR JSON bundle.
-- Analyzes vitals trends (Heart Rate, Temperature).
-- **Generates a narrative clinical summary** (e.g., *"Patient shows signs of tachycardia consistent with reported fever..."*).
-- Suggests a **Triage Priority (P1-P4)** based on the data.
-
-### 3. Hybrid Data Architecture
-- **Local Store:** A simulated, browser-based FHIR store for privacy-first, offline-capable demos.
-- **Public Interoperability:** Can switch modes to search the **HAPI FHIR Public Server**, demonstrating real-world interoperability.
+We didn't just build a dashboard; we built a translation engine that turns raw rows of spreadsheet data into lifesaving clinical context.
 
 ---
 
-## 📸 Interface & Architecture
+## 📸 System Overview
 
-### The Dashboard (Triage Board)
-*A real-time view of active patients, color-coded by AI-suggested triage levels.*
+### The Operations Dashboard
+*A real-time command center showing patient status, triage priority, and facility load.*
 
-![Dashboard Preview](./public/dashboard-screenshot.png)
-*(Place a screenshot of your dashboard here named dashboard-screenshot.png)*
-
-### The Clinical View
-*Detailed breakdown of patient history, combining AI insights with raw FHIR JSON data availability.*
-
-![Clinical View](./public/clinical-screenshot.png)
-*(Place a screenshot of the patient detail page here named clinical-screenshot.png)*
+![Dashboard Architecture](./assets/dashboard-wireframe.svg)
 
 ---
 
-## 🛠️ Technical Implementation
+## ⚡ Key Capabilities
 
-### Tech Stack
-- **Frontend:** React 19, TailwindCSS, Lucide Icons.
-- **Visualization:** Recharts for vital sign trending.
-- **AI Engine:** Google GenAI SDK (`@google/genai`).
-- **Standards:** HL7 v2.5 (Simulated pipeline) & FHIR R4.
+### 1. Smart Ingestion Engine
+Real-world data is never perfect. Our "Universal Form Adapter":
+- **Fuzzy Matches Headers:** It understands that "What is the patient's temp?" means `Body Temperature`.
+- **Prevents Duplicates:** It intelligently merges new form responses into existing patient records using ID matching logic.
+- **Simulates Legacy Tech:** It generates raw **HL7 v2.5 ADT messages** internally to demonstrate how legacy hospital systems communicate.
 
-### The Pipeline
-1. **Input:** User submits a Google Form (e.g., Triage Form).
-2. **Ingestion:** React app fetches the published CSV.
-3. **Translation:** 
-   - Converts CSV row → **HL7 v2.5 String** (ADT^A01).
-   - Parses HL7 → **FHIR R4 JSON** (Patient, Encounter, Observation resources).
-4. **Storage:** Upserts data into the Local Store.
-5. **Analysis:** Gemini AI reads the new resources and updates the dashboard.
+### 2. AI-Powered Clinical Intelligence
+We leverage **Google Gemini 2.5 Flash** to act as an always-on clinical assistant.
+- **Contextual Summary:** Instead of forcing a doctor to read 20 rows of vitals, the AI writes: *"Patient exhibiting tachycardia (110 bpm) and elevated temp, suggesting possible infection."*
+- **Risk Assessment:** It scans the FHIR bundle to assign a Triage Priority (P1-Critical to P4-Non-urgent).
+
+### 3. Hybrid Data Mode
+- **Local Sandbox:** Run entirely offline with browser-based storage for privacy and demos.
+- **Public Interoperability:** Toggle a switch to connect to the **HAPI FHIR Public Server**, allowing the app to search and visualize real-world test data from the global FHIR community.
 
 ---
 
-## 🚀 How to Run
+## 🛠️ How It Works (The Pipeline)
+
+1.  **Data Entry:** A nurse submits a Google Form.
+2.  **Sync:** The AetherHealth portal pulls the published CSV.
+3.  **Normalization:** 
+    *   Row ➜ HL7 Message (ADT^A01)
+    *   HL7 ➜ FHIR Resources (Patient, Encounter, Observation)
+4.  **AI Analysis:** The FHIR Bundle is sent to Gemini to generate the "Clinical Summary" and "Triage Tag".
+5.  **Visualization:** The dashboard updates in real-time.
+
+---
+
+## 🚀 How to Run Locally
 
 1. **Clone the repository**
 2. **Install Dependencies:**
